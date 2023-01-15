@@ -21,6 +21,7 @@ contract Voting is IVoting {
   /****************************************************************************
    *                              CONSTANTS                                   *
    ****************************************************************************/
+
   /**
     The mask to zero out the values of `voteFor` in `_packedProposals`
    */
@@ -74,11 +75,11 @@ contract Voting is IVoting {
 
   /**
     The mapping of proposal Id proposal records containing:
-    - vote starting time
-    - vote end time
-    - the number of votes for
-    - the number of votes against
-    - extra data
+    - vote starting time [40 bits]
+    - vote end time [40 bits]
+    - the number of votes for [80 bits]
+    - the number of votes against [80 bits]
+    - extra data [16 bits]
 
     Bits Layout:
    - [0-39]     `voteStart`
