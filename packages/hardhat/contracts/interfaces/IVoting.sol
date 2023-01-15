@@ -6,15 +6,20 @@ interface IVoting {
   /****************************************************************************
    *                                 ERRORS                                   *
    ****************************************************************************/
-
+  /// Voting hasn't started yet
+  error Early();
+  /// Voting is over
+  error Late();
+  /// The value is in danger of overflowing
+  error Overflow();
 
   /****************************************************************************
    *                                 EVENTS                                   *
    ****************************************************************************/
 
   event Voted(
-    uint256 indexed proposalId,
-    uint256 indexed amountVotes,
+    uint32 indexed proposalId,
+    uint80 indexed amountVotes,
     bool indexed voted,
     address voter
   );
@@ -45,7 +50,7 @@ interface IVoting {
    *                            VOTE FUNCTIONS                                *
    ****************************************************************************/
 
-  function vote(uint32 proposalId, bool choice, address voter) external;
+  function vote(uint32 proposalId, bool choice) external;
 
   /****************************************************************************
    *                          VIEWER FUNCTIONS                                *

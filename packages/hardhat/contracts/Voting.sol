@@ -8,13 +8,21 @@ pragma solidity 0.8.17;
   @dev  This contract is an experiment in using bit packing to store
         different variables inside one uint256 value.
 
-        In this contract this is focused on `_packedProposalRecords`
-        The mapping contains uint256 values which in packed form contain 
-        the `vote start time`, the `vote end time`, the `votes for` and
-        the `votes against`, as well as `extra data`
+        The `_packedProposalRecords` mapping contains uint256 values
+        which in packed form contain the `vote start time`,
+        the `vote end time`, the `votes for` and the `votes against`,
+        as well as `extra data`
 
+  A note on formatting: the `Proposal` struct, errors and events are
+  implemented in the `IVoting.sol` interface.
+
+  Some assumptions:
+  - voting power assumes a total maximum of `type(uint80).max -1` in cumulative votes
  */
 
+/****************************************************************************
+ *                               IMPORTS                                    *
+ ****************************************************************************/
 import "./interfaces/IVoting.sol";
 
 contract Voting is IVoting {
@@ -105,6 +113,12 @@ contract Voting is IVoting {
    *                   INTERNAL PACKING OPERATIONS                            *
    ****************************************************************************/
 
+  /**
+    @notice Packs `data` into bit positions [240-255] in the `result`
+    @param  proposalId The ID of the proposal record being packed
+    @param  extraData The data being packed into the record (in uint16 format)
+    @return result The proposal record packed into uint256 format
+   */
   function _packExtraData(uint32 proposalId, uint16 extraData) internal view returns (uint256 result) {
     result = _packedProposalRecords[proposalId];
 
@@ -113,6 +127,13 @@ contract Voting is IVoting {
     }
   }
 
+  /**
+    @notice Packs the supplied vote times into the proposal record
+    @param  proposalId The ID of the target proposal record
+    @param  voteStart The vote start date
+    @param  voteEnd The vote end date
+    @return result The proposal record packed into uint256 format
+   */
   function _packVoteTimes(
     uint32 proposalId,
     uint256 voteStart, 
@@ -125,11 +146,24 @@ contract Voting is IVoting {
     }
   }
 
-  function _packVotes(uint32 proposalId, uint80 votes, bool choice) internal view returns (uint256 result) {
+  /**
+    @notice Calculates and packs votes
+    @param  proposalId The ID of the target proposal record
+    @param  votes The amount of votes to add to the target proposal record
+    @param  choice Voting for or against the target proposal
+   */
+  function _packVotes(
+    uint32 proposalId,
+    uint80 votes,
+    bool choice
+  ) internal view returns (uint256 result) {
     result = _packedProposalRecords[proposalId];
     /// Isolate and increment the number of votes
     uint80 currentVotes = uint80(result >> (choice ? _BIT_OFFSET_VOTES_FOR : _BIT_OFFSET_VOTES_AGAINST));
-    votes += currentVotes;
+    
+    unchecked {
+      votes += currentVotes;
+    }
 
     assembly {
       if eq(choice, true) {
@@ -144,6 +178,11 @@ contract Voting is IVoting {
     }
   }
 
+  /**
+    @notice Unpacks the given uint256 into a `Proposal` struct
+    @param  packedRecord The packed record in uint256 format
+    @return unpackedProposal The `Proposal` struct constructed from the `packedRecord` 
+   */
   function _unpackProposalRecord(uint256 packedRecord) internal pure returns (Proposal memory unpackedProposal) {
     unpackedProposal.voteStart = uint40(packedRecord >> _BIT_OFFSET_VOTE_START);
     unpackedProposal.voteEnd = uint40(packedRecord >> _BIT_OFFSET_VOTE_END);
@@ -156,16 +195,25 @@ contract Voting is IVoting {
    *                            PROPOSE OPERATIONS                            *
    ****************************************************************************/
 
+  /**
+    @notice Allows a user to make a proposal
+    @param  proposalHash The hash of the proposal
+    @param  voteStart The unix timestamp representing the voting start time
+    @param  voteEnd The unix timestamp representing the voting end time
+    @return proposalId The ID of the proposal
+   */
   function propose(
     bytes32 proposalHash,
     uint256 voteStart,
     uint256 voteEnd
   ) public returns (uint32 proposalId) {
     proposalId = proposalCounter;
-    proposalCounter++;
+
+    unchecked {
+      proposalCounter++;
+    }
 
     _proposals[proposalId] = proposalHash;
-
     _packedProposalRecords[proposalId] = _packVoteTimes(proposalId, voteStart, voteEnd);
   }
 
@@ -173,34 +221,58 @@ contract Voting is IVoting {
    *                            VOTE OPERATIONS                               *
    ****************************************************************************/
 
-  function vote(uint32 proposalId, bool choice, address voter) external {
-    _packedProposalRecords[proposalId] = _packVotes(proposalId, _votingPower[voter], choice);
-    delete _votingPower[voter];
+  /**
+    @notice Allows a user to vote on an open proposal
+    @param  proposalId The ID of the target proposal
+    @param  choice Bool representing support or opposition for proposal
+    @
+   */
+  function vote(uint32 proposalId, bool choice) external {
+    _packedProposalRecords[proposalId] = _packVotes(proposalId, _votingPower[msg.sender], choice);
+
+    delete _votingPower[msg.sender];
+
+    emit Voted(proposalId, _votingPower[msg.sender], choice, msg.sender);
   }
 
   /****************************************************************************
    *                            VIEWING OPERATIONS                            *
    ****************************************************************************/
 
+  /**
+    @dev  Returns the proposal record in packed uint256 format
+   */
   function viewPackedProposalRecord(uint32 proposalId) external view returns (uint256) {
     return _packedProposalRecords[proposalId];
   }
 
+  /**
+    @dev  Returns the vote start time in uint40 unix
+   */
   function viewVoteStart(uint32 proposalId) external view returns (uint40) {
     Proposal memory _unpacked = _unpackProposalRecord(_packedProposalRecords[proposalId]);
     return _unpacked.voteStart;
   }
 
+  /**
+    @dev  Returns the vote end time in uint40 unix
+   */
   function viewVoteEnd(uint32 proposalId) external view returns (uint40) {
     Proposal memory _unpacked = _unpackProposalRecord(_packedProposalRecords[proposalId]);
     return _unpacked.voteEnd;
   }
 
+  /**
+    @dev  Returns the amount of votes for the target `proposalId`
+   */
   function viewVotesFor(uint32 proposalId) external view returns (uint80) {
     Proposal memory _unpacked = _unpackProposalRecord(_packedProposalRecords[proposalId]);
     return _unpacked.votesFor;
   }
 
+  /**
+    @dev  Returns the amount of votes against the target `proposalId`
+   */
   function viewVotesAgainst(uint32 proposalId) external view returns (uint80) {
     Proposal memory _unpacked = _unpackProposalRecord(_packedProposalRecords[proposalId]);
     return _unpacked.votesAgainst;
