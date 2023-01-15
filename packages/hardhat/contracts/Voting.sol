@@ -4,6 +4,15 @@ pragma solidity 0.8.17;
 /**
   @notice Gas efficient on-chain voting using packed proposals
   @author lourens.eth
+
+  @dev  This contract is an experiment in using bit packing to store
+        different variables inside one uint256 value.
+
+        In this contract this is focused on `_packedProposalRecords`
+        The mapping contains uint256 values which in packed form contain 
+        the `vote start time`, the `vote end time`, the `votes for` and
+        the `votes against`, as well as `extra data`
+
  */
 
 import "./interfaces/IVoting.sol";
@@ -91,16 +100,6 @@ contract Voting is IVoting {
    */
   mapping(address => uint80) private _votingPower;
 
-  constructor() {
-    _votingPower[0xdc2ccd56B8cE6a924CfdA50A6ae143bf071b3f5A] = 100;
-    _votingPower[0xd84e196fA2c627FEc0E89cd901469455f7923627] = 100;
-
-    propose(bytes32("test"), 1673710985, 2673710985);
-
-    vote(0, true, 0xdc2ccd56B8cE6a924CfdA50A6ae143bf071b3f5A);
-    vote(0, false, 0xd84e196fA2c627FEc0E89cd901469455f7923627);
-  }
-
   /****************************************************************************
    *                   INTERNAL PACKING OPERATIONS                            *
    ****************************************************************************/
@@ -131,15 +130,6 @@ contract Voting is IVoting {
     uint80 currentVotes = uint80(result >> (choice ? _BIT_OFFSET_VOTES_FOR : _BIT_OFFSET_VOTES_AGAINST));
     votes += currentVotes;
 
-    /**
-    We need to clear the appropriate bit range to `0`
-    1.  Create a `mask` that is `uint80` long                                             [40][40][80][80][16]
-    2.  Shift it into position by shifting the mask left (<<) to the start bit position   [MASK][80][80][16]
-    3.  Get a mask of `uint16`                                                            [40][40][80][80][MASK]
-    4.  Perform bitwise OR of two masks                                                   [MASK][80][80][MASK]
-    5.  Now perform a bitwise `AND` (`&`) on `result` & `mask`
-     */
-
     assembly {
       if eq(choice, true) {
         result := and(result, _BITMASK_VOTES_FOR_COMPLEMENT)
@@ -166,20 +156,25 @@ contract Voting is IVoting {
    ****************************************************************************/
 
   function propose(
-    bytes32 dummyProposal,
+    bytes32 proposalHash,
     uint256 voteStart,
     uint256 voteEnd
   ) public returns (uint32 proposalId) {
     proposalId = proposalCounter;
     proposalCounter++;
 
-    _proposals[proposalId] = dummyProposal;
+    _proposals[proposalId] = proposalHash;
 
     _packedProposalRecords[proposalId] = _packVoteTimes(proposalId, voteStart, voteEnd);
   }
 
-  function vote(uint32 proposalId, bool choice, address voter) public {
+  /****************************************************************************
+   *                            VOTE OPERATIONS                               *
+   ****************************************************************************/
+
+  function vote(uint32 proposalId, bool choice, address voter) external {
     _packedProposalRecords[proposalId] = _packVotes(proposalId, _votingPower[voter], choice);
+    delete _votingPower[voter];
   }
 
   /****************************************************************************
@@ -187,18 +182,27 @@ contract Voting is IVoting {
    ****************************************************************************/
 
   function viewPackedProposalRecord(uint32 proposalId) external view returns (uint256) {
-    console.logUint(_packedProposalRecords[proposalId]);
     return _packedProposalRecords[proposalId];
   }
 
   function viewVoteStart(uint32 proposalId) external view returns (uint40) {
     Proposal memory _unpacked = _unpackProposalRecord(_packedProposalRecords[proposalId]);
-    return uint40(_unpacked.voteStart);
+    return _unpacked.voteStart;
   }
 
   function viewVoteEnd(uint32 proposalId) external view returns (uint40) {
     Proposal memory _unpacked = _unpackProposalRecord(_packedProposalRecords[proposalId]);
-    return uint40(_unpacked.voteEnd);
+    return _unpacked.voteEnd;
+  }
+
+  function viewVotesFor(uint32 proposalId) external view returns (uint80) {
+    Proposal memory _unpacked = _unpackProposalRecord(_packedProposalRecords[proposalId]);
+    return _unpacked.votesFor;
+  }
+
+  function viewVotesAgainst(uint32 proposalId) external view returns (uint80) {
+    Proposal memory _unpacked = _unpackProposalRecord(_packedProposalRecords[proposalId]);
+    return _unpacked.votesAgainst;
   }
 
   // to support receiving ETH by default
