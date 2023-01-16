@@ -5,19 +5,23 @@ pragma solidity 0.8.17;
   @notice Gas efficient on-chain voting using packed proposals
   @author lourens.eth
 
-  @dev  This contract is an experiment in using bit packing to store
-        different variables inside one uint256 value.
+      NB  This contract is for educational purposes only and should not 
+          be used in a production environment without modification.
 
-        The `_packedProposalRecords` mapping contains uint256 values
-        which in packed form contain the `vote start time`,
-        the `vote end time`, the `votes for` and the `votes against`,
-        as well as `extra data`
+    @dev  The contract is an experiment in using bit packing to store
+          different variables inside one uint256 value.
+
+          The `_packedProposalRecords` mapping contains uint256 values
+          which in packed form contain the `vote start time`,
+          the `vote end time`, the `votes for` and the `votes against`,
+          as well as `extra data`
 
   A note on formatting: the `Proposal` struct, errors and events are
   implemented in the `IVoting.sol` interface.
 
   Some assumptions:
   - voting power assumes a total maximum of `type(uint80).max -1` in cumulative votes
+  - for this concept when calling `vote` a user spends and loses all voting power
  */
 
 /****************************************************************************
@@ -195,13 +199,7 @@ contract Voting is IVoting {
    *                            PROPOSE OPERATIONS                            *
    ****************************************************************************/
 
-  /**
-    @notice Allows a user to make a proposal
-    @param  proposalHash The hash of the proposal
-    @param  voteStart The unix timestamp representing the voting start time
-    @param  voteEnd The unix timestamp representing the voting end time
-    @return proposalId The ID of the proposal
-   */
+  /// @inheritdoc IVoting
   function propose(
     bytes32 proposalHash,
     uint256 voteStart,
@@ -221,12 +219,12 @@ contract Voting is IVoting {
    *                            VOTE OPERATIONS                               *
    ****************************************************************************/
 
-  /**
-    @notice Allows a user to vote on an open proposal
-    @param  proposalId The ID of the target proposal
-    @param  choice Bool representing support or opposition for proposal
-    @
-   */
+  /// @inheritdoc IVoting
+  function setVotingPower(address voter, uint80 votingPower) external {
+    _votingPower[voter] = votingPower;
+  }
+
+  /// @inheritdoc IVoting
   function vote(uint32 proposalId, bool choice) external {
     _packedProposalRecords[proposalId] = _packVotes(proposalId, _votingPower[msg.sender], choice);
 
