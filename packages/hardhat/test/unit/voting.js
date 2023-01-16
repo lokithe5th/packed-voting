@@ -16,11 +16,10 @@ describe("Packed Voting", function () {
     user1 = setup.roles.user1;
     user2 = setup.roles.user2;
 
-    votingContract = await voting.init();
+    votingContract = await init.voting();
 
   });
 
-  // quick fix to let gas reporter fetch data from gas station & coinmarketcap
   before("Setup", async () => {
     await setupTests();
   });
@@ -28,19 +27,9 @@ describe("Packed Voting", function () {
   describe("Voting Contract", function () {
     describe("propose()", function () {
       it("Should be able to make a new proposal", async function () {
-        const newProposal = utils.keccak256(utils.toUtf8Bytes("test"));
+        const newProposal = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("test"));
 
         await votingContract.propose(newProposal, voteStart, voteEnd);
-      });
-
-      it("Should emit a SetPurpose event ", async function () {
-        const [owner] = await ethers.getSigners();
-
-        const newPurpose = "Another Test Purpose";
-
-        expect(await myContract.setPurpose(newPurpose))
-          .to.emit(myContract, "SetPurpose")
-          .withArgs(owner.address, newPurpose);
       });
     });
 
@@ -57,16 +46,16 @@ describe("Packed Voting", function () {
     });
 
     describe("viewVoteEnd()", function () {
-      it("Should return the proposal start end in unix format", async function () {
-        expect(await votingContract.viewVoteStart(0)).to.equal(voteEnd);
+      it("Should return the proposal end end in unix format", async function () {
+        expect(await votingContract.viewVoteEnd(0)).to.equal(voteEnd);
       })
     });
 
     describe("setVotingPower()", function () {
-      it("Should return the proposal start time in unix format", async function () {
+      it("Should set the target voting power", async function () {
         await votingContract.setVotingPower(user1.address, 100);
         await votingContract.setVotingPower(user2.address, 100);
-        await votingCotnract.setVotingPower(root.address, 200);
+        await votingContract.setVotingPower(root.address, 200);
       });
     });
 
