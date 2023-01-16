@@ -110,10 +110,9 @@ Did you catch a mistake? Hmu on the BuidlGuidl telegram group 🛡
 Comments, suggestions and corrections welcome.
 
 Proubly built with Scaffold-Eth
-
-<br></br>
-<hr></hr>
-
+  
+  
+  
 # 🏗 Scaffold-ETH
 
 > everything you need to build on Ethereum! 🚀
