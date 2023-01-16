@@ -111,6 +111,9 @@ Comments, suggestions and corrections welcome.
 
 Proubly built with Scaffold-Eth
 
+<br/>
+<hr/>
+
 # 🏗 Scaffold-ETH
 
 > everything you need to build on Ethereum! 🚀
