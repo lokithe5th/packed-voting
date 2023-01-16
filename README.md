@@ -1,6 +1,6 @@
 # Flipping Bits for Fun (and Profit)  
 
-This build focuses demonstrating bit packing and manipulation through a simple proposal and voting dApp.  
+This build focuses demonstrating bit packing and manipulation through a simple proposal and voting contract.  
 
 The focus should be on the packages/hardhat/contracts folder, which contains the `Voting.sol` and `IVoting.sol` files. 
 
