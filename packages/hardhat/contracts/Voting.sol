@@ -226,6 +226,9 @@ contract Voting is IVoting {
 
   /// @inheritdoc IVoting
   function vote(uint32 proposalId, bool choice) external {
+    if (block.timestamp < viewVoteStart(proposalId)) {revert Early();}
+    if (block.timestamp > viewVoteEnd(proposalId)) {revert Late();}
+
     _packedProposalRecords[proposalId] = _packVotes(proposalId, _votingPower[msg.sender], choice);
 
     delete _votingPower[msg.sender];
@@ -247,7 +250,7 @@ contract Voting is IVoting {
   /**
     @dev  Returns the vote start time in uint40 unix
    */
-  function viewVoteStart(uint32 proposalId) external view returns (uint40) {
+  function viewVoteStart(uint32 proposalId) public view returns (uint40) {
     Proposal memory _unpacked = _unpackProposalRecord(_packedProposalRecords[proposalId]);
     return _unpacked.voteStart;
   }
@@ -255,7 +258,7 @@ contract Voting is IVoting {
   /**
     @dev  Returns the vote end time in uint40 unix
    */
-  function viewVoteEnd(uint32 proposalId) external view returns (uint40) {
+  function viewVoteEnd(uint32 proposalId) public view returns (uint40) {
     Proposal memory _unpacked = _unpackProposalRecord(_packedProposalRecords[proposalId]);
     return _unpacked.voteEnd;
   }

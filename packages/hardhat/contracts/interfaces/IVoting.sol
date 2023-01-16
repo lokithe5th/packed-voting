@@ -10,8 +10,6 @@ interface IVoting {
   error Early();
   /// Voting is over
   error Late();
-  /// The value is in danger of overflowing
-  error Overflow();
 
   /****************************************************************************
    *                                 EVENTS                                   *
