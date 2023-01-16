@@ -111,8 +111,8 @@ Comments, suggestions and corrections welcome.
 
 Proubly built with Scaffold-Eth
 
-<br/>
-<hr/>
+<br></br>
+<hr></hr>
 
 # 🏗 Scaffold-ETH
 
