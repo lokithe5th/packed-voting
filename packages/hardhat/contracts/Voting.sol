@@ -119,6 +119,7 @@ contract Voting is IVoting {
 
   /**
     @notice Packs `data` into bit positions [240-255] in the `result`
+    @dev    Note that this deletes the current `extraData`
     @param  proposalId The ID of the proposal record being packed
     @param  extraData The data being packed into the record (in uint16 format)
     @return result The proposal record packed into uint256 format
@@ -171,13 +172,11 @@ contract Voting is IVoting {
 
     assembly {
       if eq(choice, true) {
-        result := and(result, _BITMASK_VOTES_FOR_COMPLEMENT)
-        result := or(result, shl(_BIT_OFFSET_VOTES_FOR, votes))
+        result := or(and(result, _BITMASK_VOTES_FOR_COMPLEMENT), shl(_BIT_OFFSET_VOTES_FOR, votes))
       }
       
       if eq(choice, false) {
-        result := and(result, _BITMASK_VOTES_AGAINST_COMPLEMENT)
-        result := or(result, shl(_BIT_OFFSET_VOTES_AGAINST, votes))
+        result := or(and(result, _BITMASK_VOTES_AGAINST_COMPLEMENT), shl(_BIT_OFFSET_VOTES_AGAINST, votes))
       }
     }
   }
