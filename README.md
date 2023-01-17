@@ -31,7 +31,7 @@ How do we manipulate bits in Solidity? We use the bitwise operators `>>`, `<<`, 
 
 Bear in mind, there are more, but these are enough to get you started. 
 
-### `>>`  
+### Left Shift (`>>`)  
 The bitwise right shift is used like this `a >> b`, where `a` is the value to be shifted and `b` is the number of bits to shift `a` with towards the right.  
 
 For example, let's take a `uint8` value assigned to `uint256 private x`, at it's maximum value (we can get this with `type(uint8).max`) which is `255` in decimal.
@@ -42,7 +42,7 @@ We can represent `x` as `1111 1111` in binary.
 
 Thus, `0000 1111`
 
-### `<<`  
+### Right Shift (`<<`)  
 The bitwise left shift is used like this `a << b`, where `a` is the value to be shifted and `b` is the number of bits to shift `a` with `b` towards the left. 
 
 Again, for a variable `x` with a decimal value `255`:
@@ -60,7 +60,9 @@ So what if we wanted to only have a `uint8` as our maximum? We should then cast 
 
 Be very careful when shifting values. It will help to make a map of your bit layouts when packing and manipulating data (these can be represented as hexadecimal values too).
 
-### `&`  
+The second **gotcha** is that (`x >> y`) is interpreted to mean `shift x`, `y bits` to the left in Solidity, but in Yul (or assembly), this is written as `shl(y, x)` with the value `x` being shifted `y` units to the left. The same is true for `x << y` which is the same as `shr(y, x)` in Yul.
+
+### BITWISE `and` (`&`)  
 The bitwise `and` is simple. It takes two values, `a & b` and compares their bits.
 If `a`: `0001 1000` and `b: 0000 0001` then `a & b` = `0000 0010`
 
@@ -68,7 +70,7 @@ It simply compares each bit and if both bits are `1` it returns a `1` for that b
 
 Where is this useful? Let's say you stored a value in the last 4 bits of `b`. If you want to clear the last four bits of `b`, you can do `b & 1111`, which will return `0` for all bits except the last four. This can be used to mask values you don't need at the moment.
 
-### `|`  
+### BITWISE `or` (`|`)  
 The bitwise `or` is used to mix two packed values together. It takes `a | b` and compares their bits. If `a`: `1010 0000` and `b: 0000 1010`; we are storing a value in the first four bits of `a` and another value in the last 4 bits of `b`. To pack these into one 8 bit variable we do `a | b` and get: `1010 0000 | 0000 1010` = `1010 1010`
 
 It compares each bit position and if the value is a `0` or `1` it returns `1`, if both are `0` it returns `0`.

@@ -22,6 +22,8 @@ pragma solidity 0.8.17;
   Some assumptions:
   - voting power assumes a total maximum of `type(uint80).max -1` in cumulative votes
   - for this concept when calling `vote` a user spends and loses all voting power
+  - if linked to a voting token, this could be set using `_beforeTokenTransfer` hook 
+    or equivalent in the associated token contract
  */
 
 /****************************************************************************
