@@ -31,7 +31,7 @@ How do we manipulate bits in Solidity? We use the bitwise operators `>>`, `<<`, 
 
 Bear in mind, there are more, but these are enough to get you started. 
 
-### Left Shift (`>>`)  
+### Right Shift (`>>`)  
 The bitwise right shift is used like this `a >> b`, where `a` is the value to be shifted and `b` is the number of bits to shift `a` with towards the right.  
 
 For example, let's take a `uint8` value assigned to `uint256 private x`, at it's maximum value (we can get this with `type(uint8).max`) which is `255` in decimal.
@@ -42,7 +42,7 @@ We can represent `x` as `1111 1111` in binary.
 
 Thus, `0000 1111`
 
-### Right Shift (`<<`)  
+### Left Shift (`<<`)  
 The bitwise left shift is used like this `a << b`, where `a` is the value to be shifted and `b` is the number of bits to shift `a` with `b` towards the left. 
 
 Again, for a variable `x` with a decimal value `255`:
