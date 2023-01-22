@@ -244,7 +244,7 @@ contract Voting is IVoting {
   /**
     @dev  Returns the proposal record in packed uint256 format
    */
-  function viewPackedProposalRecord(uint32 proposalId) external view returns (uint256) {
+  function viewProposalRecord(uint32 proposalId) external view returns (uint256) {
     return _packedProposalRecords[proposalId];
   }
 

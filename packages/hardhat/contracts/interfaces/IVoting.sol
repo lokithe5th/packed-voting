@@ -74,7 +74,7 @@ interface IVoting {
    *                          VIEWER FUNCTIONS                                *
    ****************************************************************************/
 
-  function viewPackedProposalRecord(uint32 proposalId) external view returns (uint256);
+  function viewProposalRecord(uint32 proposalId) external view returns (uint256);
 
   function viewVoteStart(uint32 proposalId) external view returns (uint40);
 
