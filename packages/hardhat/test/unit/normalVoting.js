@@ -3,13 +3,13 @@ const { expect } = require("chai");
 const init = require('../test-init.js');
 
 let votingContract;
-let voteStart = 1674470450;
-let voteEnd =  2674470450;
-let proposalId = 0;
+let voteStart = 1673849488;
+let voteEnd = 2673849488;
+let proposalId = 0
 
 const newProposal = ethers.utils.keccak256(ethers.utils.toUtf8Bytes("test"));
 
-describe("Packed Voting", function () {
+describe("Normal Voting", function () {
 
   const setupTests = deployments.createFixture(async () => {
     const signers = await ethers.getSigners();
@@ -19,7 +19,7 @@ describe("Packed Voting", function () {
     user1 = setup.roles.user1;
     user2 = setup.roles.user2;
 
-    votingContract = await init.voting();
+    votingContract = await init.normalVoting();
 
   });
 
@@ -49,7 +49,7 @@ describe("Packed Voting", function () {
     });
 
     describe("viewVoteEnd()", function () {
-      it("Should return the proposal end in unix format", async function () {
+      it("Should return the proposal end end in unix format", async function () {
         expect(await votingContract.viewVoteEnd(0)).to.equal(voteEnd);
       })
     });
@@ -85,7 +85,7 @@ describe("Packed Voting", function () {
 
     describe("gas usage test", function () {
       it("Should execute votes 10 000 times", async function () {
-        for (let i = 0; i <5000; i++) {
+        for (let i = 0; i < 5000; i++) {
           if (i == 100 || i == 400 || i == 3000) {
             console.log(i);
           }
@@ -100,5 +100,6 @@ describe("Packed Voting", function () {
         }
       });
     });
+
   });
 });

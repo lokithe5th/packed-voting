@@ -19,7 +19,15 @@ const voting = async (setup) => {
     return votingContract;
 }
 
+const normalVoting = async (setup) => {
+  const votingContractFactory = await ethers.getContractFactory("NormalVoting");
+  let votingContract = await votingContractFactory.deploy();
+
+  return votingContract;
+}
+
 module.exports = {
   initialize,
-  voting
+  voting,
+  normalVoting
 }; 

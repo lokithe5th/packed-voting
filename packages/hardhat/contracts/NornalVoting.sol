@@ -1,14 +1,8 @@
 pragma solidity 0.8.17;
 
-contract NormalVoting {
+import "./interfaces/IVoting.sol";
 
-    struct Proposal {
-        uint40 voteStart;
-        uint40 voteEnd;
-        uint80 votesFor;
-        uint80 votesAgainst;
-        uint16 extraData;
-    }
+contract NormalVoting is IVoting {
 
     mapping(uint32 => Proposal) private _proposalStructs;
     mapping(uint32 => bytes32) private _proposals;
@@ -18,14 +12,14 @@ contract NormalVoting {
 
     function propose(
         bytes32 proposalHash,
-        uint40 voteStart,
-        uint40 voteEnd
+        uint256 voteStart,
+        uint256 voteEnd
     ) external returns (uint32 proposalId) {
         proposalId = proposalCounter;
 
         Proposal storage proposal = _proposalStructs[proposalId];
-        proposal.voteStart = voteStart;
-        proposal.voteEnd = voteEnd;
+        proposal.voteStart = uint40(voteStart);
+        proposal.voteEnd = uint40(voteEnd);
 
         _proposals[proposalId] = proposalHash;
 
@@ -37,26 +31,38 @@ contract NormalVoting {
     }
 
     function vote(uint32 proposalId, bool choice) external {
+        if (block.timestamp < _proposalStructs[proposalId].voteStart) {revert Early();}
+        if (block.timestamp > _proposalStructs[proposalId].voteEnd) {revert Late();}
 
+        Proposal storage proposal = _proposalStructs[proposalId];
+        if (choice) {
+            proposal.votesFor += _votingPower[msg.sender];
+        } else {
+            proposal.votesAgainst += _votingPower[msg.sender];
+        }
+
+        emit Voted(proposalId, _votingPower[msg.sender], choice, msg.sender);
+
+        delete _votingPower[msg.sender];
     }
 
-    function viewProposalRecord(uint32 proposalId) external view returns (Proposal memory proposal) {
-        return _proposalStructs[proposalId];
+    function viewVoteStart(uint32 proposalId) external view returns (uint40) {
+        return _proposalStructs[proposalId].voteStart;
     }
 
-    function viewVoteStart(uint32 proposalId) external view {
-
+    function viewVoteEnd(uint32 proposalId) external view returns (uint40) {
+        return _proposalStructs[proposalId].voteEnd;
     }
 
-    function viewVoteEnd(uint32 proposalId) external view {
-
+    function viewVotesFor(uint32 proposalId) external view returns (uint80) {
+        return _proposalStructs[proposalId].votesFor;
     }
 
-    function viewVotesFor(uint32 proposalId) external view {
-
+    function viewVotesAgainst(uint32 proposalId) external view returns (uint80) {
+        return _proposalStructs[proposalId].votesAgainst;
     }
 
-    function viewVotesAgainst(uint32 proposalId) external view {
-
+    function viewProposalRecord(uint32 proposalId) external pure returns (uint256) {
+        return proposalId;
     }
 }

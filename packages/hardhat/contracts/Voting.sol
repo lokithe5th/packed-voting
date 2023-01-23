@@ -165,20 +165,19 @@ contract Voting is IVoting {
     bool choice
   ) internal view returns (uint256 result) {
     result = _packedProposalRecords[proposalId];
-    /// Isolate and increment the number of votes
-    uint80 currentVotes = uint80(result >> (choice ? _BIT_OFFSET_VOTES_FOR : _BIT_OFFSET_VOTES_AGAINST));
-    
-    unchecked {
-      votes += currentVotes;
-    }
 
     assembly {
       if eq(choice, true) {
-        result := or(and(result, _BITMASK_VOTES_FOR_COMPLEMENT), shl(_BIT_OFFSET_VOTES_FOR, votes))
+        result := or(
+          and(result, _BITMASK_VOTES_FOR_COMPLEMENT),
+          shl(_BIT_OFFSET_VOTES_FOR, add(shr(_BIT_OFFSET_VOTES_FOR, result), votes))
+        )
       }
       
       if eq(choice, false) {
-        result := or(and(result, _BITMASK_VOTES_AGAINST_COMPLEMENT), shl(_BIT_OFFSET_VOTES_AGAINST, votes))
+        result := or(
+          and(result, _BITMASK_VOTES_AGAINST_COMPLEMENT),
+          shl(_BIT_OFFSET_VOTES_AGAINST, add(shr(_BIT_OFFSET_VOTES_AGAINST, result), votes)))
       }
     }
   }
@@ -232,9 +231,9 @@ contract Voting is IVoting {
 
     _packedProposalRecords[proposalId] = _packVotes(proposalId, _votingPower[msg.sender], choice);
 
-    delete _votingPower[msg.sender];
-
     emit Voted(proposalId, _votingPower[msg.sender], choice, msg.sender);
+
+    delete _votingPower[msg.sender];
   }
 
   /****************************************************************************
