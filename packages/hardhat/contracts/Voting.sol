@@ -2,7 +2,7 @@ pragma solidity 0.8.17;
 //SPDX-License-Identifier: MIT
 
 /**
-  @notice Gas efficient on-chain voting using packed proposals
+  @notice On-chain voting using packed proposals
   @author lourens.eth
 
       NB  This contract is for educational purposes only and should not 
