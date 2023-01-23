@@ -47,8 +47,8 @@ interface IVoting {
    */
   function propose(
     bytes32 proposalHash,
-    uint256 voteStart,
-    uint256 voteEnd
+    uint40 voteStart,
+    uint40 voteEnd
   ) external returns (uint32 proposalId);
 
   /****************************************************************************

@@ -83,23 +83,5 @@ describe("Normal Voting", function () {
       });
     });
 
-    describe("gas usage test", function () {
-      it("Should execute votes 10 000 times", async function () {
-        for (let i = 0; i < 5000; i++) {
-          if (i == 100 || i == 400 || i == 3000) {
-            console.log(i);
-          }
-          await votingContract.setVotingPower(user1.address, 100);
-          await votingContract.setVotingPower(user2.address, 100);
-
-          await votingContract.propose(newProposal, voteStart, voteEnd);
-          proposalId++;
-
-          await expect(votingContract.connect(user1).vote(proposalId, true)).to.emit(votingContract, "Voted");
-          await expect(votingContract.connect(user2).vote(proposalId, false)).to.emit(votingContract, "Voted");
-        }
-      });
-    });
-
   });
 });

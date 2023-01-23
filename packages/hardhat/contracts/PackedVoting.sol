@@ -31,7 +31,7 @@ pragma solidity 0.8.17;
  ****************************************************************************/
 import "./interfaces/IVoting.sol";
 
-contract Voting is IVoting {
+contract PackedVoting is IVoting {
   /****************************************************************************
    *                              CONSTANTS                                   *
    ****************************************************************************/
@@ -202,8 +202,8 @@ contract Voting is IVoting {
   /// @inheritdoc IVoting
   function propose(
     bytes32 proposalHash,
-    uint256 voteStart,
-    uint256 voteEnd
+    uint40 voteStart,
+    uint40 voteEnd
   ) public returns (uint32 proposalId) {
     proposalId = proposalCounter;
 

@@ -2,7 +2,33 @@ pragma solidity 0.8.17;
 
 import "./interfaces/IVoting.sol";
 
-contract NormalVoting is IVoting {
+contract BadVoting {
+  /****************************************************************************
+   *                                 ERRORS                                   *
+   ****************************************************************************/
+  /// Voting hasn't started yet
+  error Early();
+  /// Voting is over
+  error Late();
+
+  /****************************************************************************
+   *                                 EVENTS                                   *
+   ****************************************************************************/
+
+  event Voted(
+    uint32 indexed proposalId,
+    uint80 indexed amountVotes,
+    bool indexed voted,
+    address voter
+  );
+
+    struct Proposal {
+        uint256 voteStart;
+        uint256 voteEnd;
+        uint256 votesFor;
+        uint256 votesAgainst;
+        uint16 extraData;
+    }
 
     mapping(uint32 => Proposal) private _proposalStructs;
     mapping(uint32 => bytes32) private _proposals;
@@ -46,19 +72,19 @@ contract NormalVoting is IVoting {
         delete _votingPower[msg.sender];
     }
 
-    function viewVoteStart(uint32 proposalId) external view returns (uint40) {
+    function viewVoteStart(uint32 proposalId) external view returns (uint256) {
         return _proposalStructs[proposalId].voteStart;
     }
 
-    function viewVoteEnd(uint32 proposalId) external view returns (uint40) {
+    function viewVoteEnd(uint32 proposalId) external view returns (uint256) {
         return _proposalStructs[proposalId].voteEnd;
     }
 
-    function viewVotesFor(uint32 proposalId) external view returns (uint80) {
+    function viewVotesFor(uint32 proposalId) external view returns (uint256) {
         return _proposalStructs[proposalId].votesFor;
     }
 
-    function viewVotesAgainst(uint32 proposalId) external view returns (uint80) {
+    function viewVotesAgainst(uint32 proposalId) external view returns (uint256) {
         return _proposalStructs[proposalId].votesAgainst;
     }
 
