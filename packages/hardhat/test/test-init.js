@@ -13,7 +13,7 @@ const initialize = async (accounts) => {
 };
 
 const voting = async (setup) => {
-    const votingContractFactory = await ethers.getContractFactory("Voting");
+    const votingContractFactory = await ethers.getContractFactory("PackedVoting");
     let votingContract = await votingContractFactory.deploy();
 
     return votingContract;
